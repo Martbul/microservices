@@ -17,7 +17,7 @@ func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
 
 	lp := data.GetProducts()
 
-	err := lp.ToJSON(rw)
+	err := data.ToJSON(lp,rw)
 	if err != nil {
 		// we should never be here but log the error just incase
 		p.l.Println("[ERROR] serializing product", err)
