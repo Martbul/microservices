@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-openapi/runtime/middleware"
+	gohandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/martbul/microservices/data"
 	"github.com/martbul/microservices/handlers"
@@ -50,11 +51,14 @@ func main() {
 	//serving a the swagger.yaml file
 	getRouter.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
 
+	//CORS
+	ch := gohandlers.CORS(gohandlers.AllowedOrigins([]string{"http://localhost:3000"}))
+
 	// create new server
 	server := &http.Server{
 		Addr: ":9090",
 		// using the new created serverMux, instead of the default
-		Handler:      serveMux,
+		Handler:      ch(serveMux),
 		IdleTimeout:  120 * time.Second,
 		ReadTimeout:  1 * time.Second,
 		WriteTimeout: 1 * time.Second,
