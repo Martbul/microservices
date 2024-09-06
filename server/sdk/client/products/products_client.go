@@ -9,38 +9,12 @@ import (
 	"fmt"
 
 	"github.com/go-openapi/runtime"
-	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
 )
 
 // New creates a new products API client.
 func New(transport runtime.ClientTransport, formats strfmt.Registry) ClientService {
 	return &Client{transport: transport, formats: formats}
-}
-
-// New creates a new products API client with basic auth credentials.
-// It takes the following parameters:
-// - host: http host (github.com).
-// - basePath: any base path for the API client ("/v1", "/v3").
-// - scheme: http scheme ("http", "https").
-// - user: user for basic authentication header.
-// - password: password for basic authentication header.
-func NewClientWithBasicAuth(host, basePath, scheme, user, password string) ClientService {
-	transport := httptransport.New(host, basePath, []string{scheme})
-	transport.DefaultAuthentication = httptransport.BasicAuth(user, password)
-	return &Client{transport: transport, formats: strfmt.Default}
-}
-
-// New creates a new products API client with a bearer token for authentication.
-// It takes the following parameters:
-// - host: http host (github.com).
-// - basePath: any base path for the API client ("/v1", "/v3").
-// - scheme: http scheme ("http", "https").
-// - bearerToken: bearer token for Bearer authentication header.
-func NewClientWithBearerToken(host, basePath, scheme, bearerToken string) ClientService {
-	transport := httptransport.New(host, basePath, []string{scheme})
-	transport.DefaultAuthentication = httptransport.BearerToken(bearerToken)
-	return &Client{transport: transport, formats: strfmt.Default}
 }
 
 /*
@@ -51,33 +25,31 @@ type Client struct {
 	formats   strfmt.Registry
 }
 
-// ClientOption may be used to customize the behavior of Client methods.
-type ClientOption func(*runtime.ClientOperation)
-
 // ClientService is the interface for Client methods
 type ClientService interface {
-	CreateProduct(params *CreateProductParams, opts ...ClientOption) (*CreateProductOK, error)
+	CreateProduct(params *CreateProductParams) (*CreateProductOK, error)
 
-	DeleteProduct(params *DeleteProductParams, opts ...ClientOption) (*DeleteProductCreated, error)
+	DeleteProduct(params *DeleteProductParams) (*DeleteProductCreated, error)
 
-	ListProducts(params *ListProductsParams, opts ...ClientOption) (*ListProductsOK, error)
+	ListProducts(params *ListProductsParams) (*ListProductsOK, error)
 
-	ListSingleProduct(params *ListSingleProductParams, opts ...ClientOption) (*ListSingleProductOK, error)
+	ListSingleProduct(params *ListSingleProductParams) (*ListSingleProductOK, error)
 
-	UpdateProduct(params *UpdateProductParams, opts ...ClientOption) (*UpdateProductCreated, error)
+	UpdateProduct(params *UpdateProductParams) (*UpdateProductCreated, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
 
 /*
-CreateProduct Create a new product
+  CreateProduct Create a new product
 */
-func (a *Client) CreateProduct(params *CreateProductParams, opts ...ClientOption) (*CreateProductOK, error) {
+func (a *Client) CreateProduct(params *CreateProductParams) (*CreateProductOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewCreateProductParams()
 	}
-	op := &runtime.ClientOperation{
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "createProduct",
 		Method:             "POST",
 		PathPattern:        "/products",
@@ -88,12 +60,7 @@ func (a *Client) CreateProduct(params *CreateProductParams, opts ...ClientOption
 		Reader:             &CreateProductReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -108,14 +75,15 @@ func (a *Client) CreateProduct(params *CreateProductParams, opts ...ClientOption
 }
 
 /*
-DeleteProduct Returns a list of pr
+  DeleteProduct Update a products details
 */
-func (a *Client) DeleteProduct(params *DeleteProductParams, opts ...ClientOption) (*DeleteProductCreated, error) {
+func (a *Client) DeleteProduct(params *DeleteProductParams) (*DeleteProductCreated, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewDeleteProductParams()
 	}
-	op := &runtime.ClientOperation{
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteProduct",
 		Method:             "DELETE",
 		PathPattern:        "/products/{id}",
@@ -126,12 +94,7 @@ func (a *Client) DeleteProduct(params *DeleteProductParams, opts ...ClientOption
 		Reader:             &DeleteProductReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -146,14 +109,15 @@ func (a *Client) DeleteProduct(params *DeleteProductParams, opts ...ClientOption
 }
 
 /*
-ListProducts Return a list of products from the database
+  ListProducts Return a list of products from the database
 */
-func (a *Client) ListProducts(params *ListProductsParams, opts ...ClientOption) (*ListProductsOK, error) {
+func (a *Client) ListProducts(params *ListProductsParams) (*ListProductsOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewListProductsParams()
 	}
-	op := &runtime.ClientOperation{
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "listProducts",
 		Method:             "GET",
 		PathPattern:        "/products",
@@ -164,12 +128,7 @@ func (a *Client) ListProducts(params *ListProductsParams, opts ...ClientOption) 
 		Reader:             &ListProductsReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -184,14 +143,15 @@ func (a *Client) ListProducts(params *ListProductsParams, opts ...ClientOption) 
 }
 
 /*
-ListSingleProduct Return a list of products from the database
+  ListSingleProduct Return a list of products from the database
 */
-func (a *Client) ListSingleProduct(params *ListSingleProductParams, opts ...ClientOption) (*ListSingleProductOK, error) {
+func (a *Client) ListSingleProduct(params *ListSingleProductParams) (*ListSingleProductOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewListSingleProductParams()
 	}
-	op := &runtime.ClientOperation{
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "listSingleProduct",
 		Method:             "GET",
 		PathPattern:        "/products/{id}",
@@ -202,12 +162,7 @@ func (a *Client) ListSingleProduct(params *ListSingleProductParams, opts ...Clie
 		Reader:             &ListSingleProductReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -222,14 +177,15 @@ func (a *Client) ListSingleProduct(params *ListSingleProductParams, opts ...Clie
 }
 
 /*
-UpdateProduct Update a products details
+  UpdateProduct Update a products details
 */
-func (a *Client) UpdateProduct(params *UpdateProductParams, opts ...ClientOption) (*UpdateProductCreated, error) {
+func (a *Client) UpdateProduct(params *UpdateProductParams) (*UpdateProductCreated, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUpdateProductParams()
 	}
-	op := &runtime.ClientOperation{
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateProduct",
 		Method:             "PUT",
 		PathPattern:        "/products",
@@ -240,12 +196,7 @@ func (a *Client) UpdateProduct(params *UpdateProductParams, opts ...ClientOption
 		Reader:             &UpdateProductReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
+	})
 	if err != nil {
 		return nil, err
 	}
