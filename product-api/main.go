@@ -15,6 +15,8 @@ import (
 	"github.com/martbul/microservices/handlers"
 )
 
+// var bindAddress = env.String("BIND_ADDRESS", false, ":9090", "Bind address for the server")
+
 func main() {
 	
 	l := log.New(os.Stdout, "product-api", log.LstdFlags)
@@ -24,6 +26,7 @@ func main() {
 
 	// adding gorila serveMux(allowes for registering more detailed routers)
 	serveMux := mux.NewRouter()
+
 
 	// handlers for API
 	getRouter := serveMux.Methods(http.MethodGet).Subrouter()

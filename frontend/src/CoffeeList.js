@@ -6,7 +6,7 @@ class CoffeeList extends React.Component {
 
     readData() {
         const self = this;
-        axios.get(window.global.api_location+'/products').then(function(response) {
+        axios.get(window.global.api_location).then(function(response) {
             console.log(response.data);
 
             self.setState({products: response.data});
