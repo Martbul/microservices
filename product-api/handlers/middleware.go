@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/martbul/microservices/data"
+	"github.com/martbul/product-api/data"
 )
 
 

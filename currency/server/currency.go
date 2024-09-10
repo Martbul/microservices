@@ -1,3 +1,4 @@
+//! gRPC is code generating and you must implement the (code-generated) interfaces 
 package server
 
 import (

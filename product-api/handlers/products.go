@@ -19,9 +19,10 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	protos "github.com/martbul/currency/protos/currency"
 
 	"github.com/gorilla/mux"
-	"github.com/martbul/microservices/data"
+	"github.com/martbul/product-api/data"
 )
 
 // swagger:response noContent
@@ -49,10 +50,11 @@ type productIDParameterWrapper struct {
 type Products struct {
 	l *log.Logger
 	v *data.Validation
+	cc protos.CurrencyClient
 }
 
-func NewProducts(l *log.Logger, v*data.Validation) *Products {
-	return &Products{l,v}
+func NewProducts(l *log.Logger, v *data.Validation, cc protos.CurrencyClient) *Products {
+	return &Products{l,v, cc}
 }
 
 type KeyProduct struct{}

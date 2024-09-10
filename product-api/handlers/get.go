@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
+	protos "github.com/martbul/currency/protos/currency"
 
-	"github.com/martbul/microservices/data"
+	"github.com/martbul/product-api/data"
 )
 
 // swagger:route GET /products products listProducts
@@ -56,6 +58,24 @@ func (p *Products) ListSingle(rw http.ResponseWriter, r *http.Request) {
 		data.ToJSON(&GenericError{Message: err.Error()}, rw)
 		return
 	}
+
+
+	//get exchange rate	
+	rateRequest := &protos.RateRequest{
+		Base:protos.Currencies(protos.Currencies_value["EUR"]),
+		Destination : protos.Currencies(protos.Currencies_value["GBP"]),
+	}
+
+	resp, err := p.cc.GetRate(context.Background(), rateRequest)
+
+	if err != nil {
+		p.l.Println("[Error] error getting new rate", err)
+		data.ToJSON(&GenericError{Message: err.Error()}, rw)
+
+		return
+	}
+
+	prod.Price = prod.Price * resp.Rate
 
 	err = data.ToJSON(prod, rw)
 	if err != nil {
