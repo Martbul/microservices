@@ -1,1 +1,5 @@
 # protoc -I protos/ --go_out=. --go-grpc_out=. protos/currency.proto
+.PHONY: protos
+
+protos:
+	protoc -I protos/ --go_out=. --go-grpc_out=. protos/currency.proto

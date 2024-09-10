@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"context"
-	"net/http"
 	protos "github.com/martbul/currency/protos/currency"
+	"net/http"
 
 	"github.com/martbul/product-api/data"
 )
@@ -17,7 +17,7 @@ import (
 func (p *Products) ListAll(rw http.ResponseWriter, r *http.Request) {
 	p.l.Println("[DEBUG] get all records")
 
-	rw.Header().Add("Content-Type","application/json")
+	rw.Header().Add("Content-Type", "application/json")
 
 	prods := data.GetProducts()
 
@@ -59,11 +59,10 @@ func (p *Products) ListSingle(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
-	//get exchange rate	
+	//get exchange rate
 	rateRequest := &protos.RateRequest{
-		Base:protos.Currencies(protos.Currencies_value["EUR"]),
-		Destination : protos.Currencies(protos.Currencies_value["GBP"]),
+		Base:        protos.Currencies(protos.Currencies_value["EUR"]),
+		Destination: protos.Currencies(protos.Currencies_value["GBP"]),
 	}
 
 	resp, err := p.cc.GetRate(context.Background(), rateRequest)

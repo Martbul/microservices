@@ -15,7 +15,7 @@ message RateRequest {
 }
 
 message RateResponse {
-    float rate = 1;
+    double rate = 1;
 }
 
 // Currencies is an enum which represents the allowed currencies for the API
