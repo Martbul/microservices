@@ -1,3 +1,5 @@
+//! making a call to the  EuropeCentralBank for the currency rates. The rates dont change very often so making new request for every item is not efficient. 
+//! Cause of that i will use gRPC for bi-directional straming and pull architecture(the ECB api will notify product-api if there is a change and then a new call will be made)
 package data
 
 import (

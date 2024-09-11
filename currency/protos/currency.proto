@@ -6,18 +6,27 @@ option go_package = "./protos/currency;currency";
 
 
 service Currency {
-    rpc GetRate (RateRequest) returns (RateResponse);
+    rpc GetRate (RateRequest) returns (RateResponse); //unary(request - response)
+    rpc SubscribeRates(stream RateRequest) returns (stream RateResponse); // stream(open connection) 
 }
 
 message RateRequest {
-    Currencies base = 1;
-    Currencies destination = 2;
+    Currencies Base = 1;
+    Currencies Destination = 2;
 }
 
+// RateResponse is the response from a GetRate call, it contains
+// rate which is a floating point number and can be used to convert between the 
+// two currencies specified in the request.
 message RateResponse {
-    double rate = 1;
+    // Base is the base currency code for the rate
+    Currencies Base = 1;
+    // Destination is the destination currency code for the rate
+    Currencies Destination = 2;
+   
+    // Rate is the returned currency rate
+    double Rate = 3;
 }
-
 // Currencies is an enum which represents the allowed currencies for the API
 enum Currencies {
     EUR=0;
