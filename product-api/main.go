@@ -11,6 +11,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	gohandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/hashicorp/go-hclog"
 	protos "github.com/martbul/currency/protos/currency"
 	"github.com/martbul/product-api/data"
 	"github.com/martbul/product-api/handlers"
@@ -21,7 +22,7 @@ import (
 
 func main() {
 	
-	l := log.New(os.Stdout, "product-api", log.LstdFlags)
+	l := hclog.Default( )
 	v := data.NewValidation()
 
 	conn, err := grpc.Dial("localhost:9092", grpc.WithInsecure())
@@ -30,10 +31,14 @@ func main() {
 	}
 
 	defer conn.Close()
+
 	//create gRPC client
 	cc := protos.NewCurrencyClient(conn)
 
-	productsHandler := handlers.NewProducts(l, v, cc)
+	//create products db
+	db := data.NewProductsDB(cc, l)
+
+	productsHandler := handlers.NewProducts(l, v, db)
 
 	
 
@@ -43,8 +48,9 @@ func main() {
 
 	// handlers for API
 	getRouter := serveMux.Methods(http.MethodGet).Subrouter()
-	getRouter.HandleFunc("/", productsHandler.ListAll)
-
+	getRouter.HandleFunc("/products", productsHandler.ListAll).Queries("currency", "{[A-Z]{3}}")
+	getRouter.HandleFunc("/products", productsHandler.ListAll)
+	
 	getRouter.HandleFunc("/products/{id:[0-9]+}", productsHandler.ListSingle).Queries("currency", "{[A-Z]{3}}")
 	getRouter.HandleFunc("/products/{id:[0-9]+}", productsHandler.ListSingle)
 
@@ -57,7 +63,7 @@ func main() {
 	putRouter.Use(productsHandler.MiddlewareValidateProduct)
 
 	deleteRouter := serveMux.Methods(http.MethodDelete).Subrouter()
-	deleteRouter.HandleFunc("/{id:[0-9]+}", productsHandler.DeleteProduct)
+	deleteRouter.HandleFunc("/{id:[0-9]+}", productsHandler.Delete)
 
 	// handler for documentation
 	opts := middleware.RedocOpts{SpecURL: "/swagger.yaml"}
@@ -71,21 +77,33 @@ func main() {
 	ch := gohandlers.CORS(gohandlers.AllowedOrigins([]string{"http://localhost:3000"}))
 
 	// create new server
-	server := &http.Server{
-		Addr: ":9090",
-		// using the new created serverMux, instead of the default
-		Handler:      ch(serveMux),
-		IdleTimeout:  120 * time.Second,
-		ReadTimeout:  1 * time.Second,
-		WriteTimeout: 1 * time.Second,
+	// server := &http.Server{
+	// 	Addr: ":9090",
+	// 	// using the new created serverMux, instead of the default
+	// 	Handler:      ch(serveMux),
+	// 	IdleTimeout:  120 * time.Second,
+	// 	ReadTimeout:  1 * time.Second,
+	// 	WriteTimeout: 1 * time.Second,
+	// }
+
+	server := http.Server{
+		Addr:         ":9090",                                     // configure the bind address
+		Handler:      ch(serveMux),                                           // set the default handler
+		ErrorLog:     l.StandardLogger(&hclog.StandardLoggerOptions{}), // set the logger for the server
+		ReadTimeout:  5 * time.Second,                                  // max time to read request from the client
+		WriteTimeout: 10 * time.Second,                                 // max time to write response to the client
+		IdleTimeout:  120 * time.Second,                                // max time for connections using TCP Keep-Alive
 	}
 
 	//! DON`T UNDERSTAND
 	//wrappingt he service in a go func in order to not block
 	go func() {
+		l.Info("Starting server on port 9090")
+
 		err := server.ListenAndServe()
 		if err != nil {
-			l.Fatal(err)
+			l.Error("Error starting server", "error", err)
+			os.Exit(1)
 		}
 	}()
 
@@ -95,7 +113,7 @@ func main() {
 	signal.Notify(sigChan, os.Kill)
 
 	sig := <-sigChan
-	l.Println("Recieved terminate, graceful shutdown", sig)
+	log.Println("Got signal:", sig)
 
 	timeoutContext, _ := context.WithTimeout(context.Background(), 30*time.Second) //allowing 30 sec for gracefuls shutdow, after them the server will forcefully shutdown
 

@@ -57,13 +57,15 @@ func NewProductsDB(c protos.CurrencyClient, l hclog.Logger) *ProductsDB {
 	return &ProductsDB{currency: c, log: l}
 }
 
-// GetProducts returns all products from the database
 func (p *ProductsDB) GetProducts(currency string) (Products, error) {
+	p.log.Info("currency",currency)
+
 	if currency == "" {
 		return productList, nil
 	}
 
 	rate, err := p.getRate(currency)
+	p.log.Info("rate",rate)
 
 	if err != nil {
 		p.log.Error("Unable to get rate", "currency", currency, "error", err)
@@ -72,7 +74,6 @@ func (p *ProductsDB) GetProducts(currency string) (Products, error) {
 
 	products := Products{}
 	for _, p := range productList {
-		// dereferancing p, now newProduct is a copy of p
 		newProduct := *p
 		newProduct.Price = newProduct.Price * rate
 		products = append(products, &newProduct)
@@ -107,33 +108,32 @@ func (p *ProductsDB) GetProductByID(id int, currency string) (*Product, error) {
 
 	return &newProduct, nil
 }
-
 // UpdateProduct replaces a product in the database with the given
 // item.
 // If a product with the given id does not exist in the database
 // this function returns a ProductNotFound error
-func UpdateProduct(p Product) error { //! work here
-	i := findIndexByProductID(p.ID)
+func (p *ProductsDB) UpdateProduct(pr Product) error {
+	i := findIndexByProductID(pr.ID)
 	if i == -1 {
 		return ErrProductNotFound
 	}
 
 	// update the product in the DB
-	productList[i] = &p
+	productList[i] = &pr
 
 	return nil
 }
 
 // AddProduct adds a new product to the database
-func AddProduct(p Product) {
+func (p *ProductsDB) AddProduct(pr Product) {
 	// get the next id in sequence
 	maxID := productList[len(productList)-1].ID
-	p.ID = maxID + 1
-	productList = append(productList, &p)
+	pr.ID = maxID + 1
+	productList = append(productList, &pr)
 }
 
 // DeleteProduct deletes a product from the database
-func DeleteProduct(id int) error {
+func (p *ProductsDB) DeleteProduct(id int) error {
 	i := findIndexByProductID(id)
 	if i == -1 {
 		return ErrProductNotFound
@@ -157,14 +157,15 @@ func findIndexByProductID(id int) int {
 }
 
 func (p *ProductsDB) getRate(destination string) (float64, error) {
-	rateRequest := &protos.RateRequest{
+	rateRequest  := &protos.RateRequest{
 		Base:        protos.Currencies(protos.Currencies_value["EUR"]),
 		Destination: protos.Currencies(protos.Currencies_value[destination]),
 	}
 
-	resp, err := p.currency.GetRate(context.Background(), rateRequest)
+	resp, err := p.currency.GetRate(context.Background(), rateRequest )
 	return resp.Rate, err
 }
+
 
 var productList = []*Product{
 	&Product{
